@@ -1,35 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './Contactform.module.css';
 import { nanoid } from 'nanoid';
 import PropTypes from 'prop-types';
 
-function ContactsForm({ contacts, onAddContact }) {
+function ContactsForm({ onAddContact }) {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
+  const [localContacts, setContacts] = useState([]);
+
+  useEffect(() => {
+    const savedContacts = localStorage.getItem("localContacts");
+    if (savedContacts) {
+      setContacts(JSON.parse(savedContacts));
+    }
+  }, []);
 
   const addContact = () => {
-    
     if (!name.trim() || !number.trim()) {
       alert('Please fill in both name and phone number.');
       return;
     }
 
-    const isDuplicate = contacts.some(contact => contact.name.toLowerCase() === name.toLowerCase());
+    const isDuplicate = localContacts.some(
+      contact => contact.name.toLowerCase() === name.toLowerCase()
+    );
     if (isDuplicate) {
       alert(`Contact with name '${name}' already exists.`);
       return;
     }
-  
+
     const newContact = {
       id: nanoid(),
       name: name,
       number: number,
     };
 
-    
     onAddContact(newContact);
 
+    const updatedContacts = [...localContacts, newContact];
+    setContacts(updatedContacts);
+    localStorage.setItem('localContacts', JSON.stringify(updatedContacts));
    
+
     setName('');
     setNumber('');
   };
@@ -60,7 +72,11 @@ function ContactsForm({ contacts, onAddContact }) {
         placeholder="Enter your phone number"
         required // This makes the field required
       />
-      <button onClick={addContact} className={styles.buttonContact} type="button">
+      <button
+        onClick={addContact}
+        className={styles.buttonContact}
+        type="button"
+      >
         Add contact
       </button>
     </div>

@@ -1,36 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './Phonebook.module.css';
 import ContactsForm from 'components/ContactsForm/Contactform';
 import ContactFilter from 'components/Filtering/Filter';
 
 function Phonebook() {
-  const [contacts, setContacts] = useState([]);
-  const [filteredContacts, setFilteredContacts] = useState([]);
+  const [localContacts, setLocalContacts] = useState([]);
+
+  useEffect(() => {
+    const savedContacts = localStorage.getItem("localContacts");
+    if (savedContacts) {
+      setLocalContacts(JSON.parse(savedContacts));
+    }
+  }, []);
+
   const addContact = newContact => {
-    setContacts([...contacts, newContact]);
-    setFilteredContacts([...filteredContacts, newContact]);
+    setLocalContacts([...localContacts, newContact]);
+    localStorage.setItem('localContacts', JSON.stringify([...localContacts, newContact]));
   };
 
   const removeContact = id => {
-    setContacts(contacts.filter(contact => contact.id !== id));
-    setFilteredContacts(filteredContacts.filter(contact => contact.id !== id));
+    const updatedContacts = localContacts.filter(contact => contact.id !== id);
+    setLocalContacts(updatedContacts);
+    localStorage.setItem('localContacts', JSON.stringify(updatedContacts));
   };
 
   return (
     <>
-      <ContactsForm contacts={contacts} onAddContact={addContact} />
+      <ContactsForm onAddContact={addContact} />
 
       <div className={styles.phonebookContainer}>
         <div className={styles.title}>
           <h2>Contacts List</h2>
           <ContactFilter
-            contacts={contacts}
-            setFilteredContacts={setFilteredContacts}
+            contacts={localContacts}
+            setFilteredContacts={setLocalContacts}
           />
         </div>
 
         <ul className={styles.phonebookList}>
-          {filteredContacts.map((contact, index) => (
+          {localContacts.map((contact, index) => (
             <li key={contact.id}>
               {' '}
               <div className={styles.ContactContainer}>
